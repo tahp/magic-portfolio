@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(FILENAME, content, {
       access: 'public',
       contentType: 'application/json',
+      allowOverwrite: true,
     });
 
     return NextResponse.json({ success: true, data: body, url: blob.url });

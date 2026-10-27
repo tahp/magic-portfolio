@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
     await put(path, content, {
       access: 'public',
       contentType: 'text/markdown',
+      allowOverwrite: true,
     });
     
     return NextResponse.json({ success: true });
