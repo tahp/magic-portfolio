@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { list, put } from "@vercel/blob";
 import { auth } from "@/auth";
+import matter from "gray-matter";
 
 async function isAuthenticated(request: NextRequest) {
   const session = await auth();
   return !!session;
+}
+
+async function getMetadataFromBlob(url: string) {
+  const res = await fetch(url);
+  const text = await res.text();
+  const { data } = matter(text);
+  return data;
 }
 
 export async function GET(request: NextRequest) {
@@ -14,19 +21,28 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const blogPath = path.join(process.cwd(), "src/app/blog/posts");
-    const workPath = path.join(process.cwd(), "src/app/work/projects");
+    const blogBlobs = await list({ prefix: "blog/" });
+    const workBlobs = await list({ prefix: "work/" });
 
-    const blogFiles = await fs.readdir(blogPath);
-    const workFiles = await fs.readdir(workPath);
+    const posts = await Promise.all(
+      blogBlobs.blobs
+        .filter(b => b.pathname.endsWith(".mdx"))
+        .map(async (b) => {
+          const metadata = await getMetadataFromBlob(b.url);
+          const slug = b.pathname.replace("blog/", "").replace(".mdx", "");
+          return { name: b.pathname.replace("blog/", ""), slug, metadata };
+        })
+    );
 
-    const posts = blogFiles
-      .filter(f => f.endsWith(".mdx"))
-      .map(f => ({ name: f, path: `blog/${f}`, content: "" })); // Content loaded on demand
-
-    const projects = workFiles
-      .filter(f => f.endsWith(".mdx"))
-      .map(f => ({ name: f, path: `work/${f}`, content: "" }));
+    const projects = await Promise.all(
+      workBlobs.blobs
+        .filter(b => b.pathname.endsWith(".mdx"))
+        .map(async (b) => {
+          const metadata = await getMetadataFromBlob(b.url);
+          const slug = b.pathname.replace("work/", "").replace(".mdx", "");
+          return { name: b.pathname.replace("work/", ""), slug, metadata };
+        })
+    );
 
     return NextResponse.json({ posts, projects });
   } catch (error) {
@@ -47,13 +63,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
-    const dir = type === "blog" 
-      ? path.join(process.cwd(), "src/app/blog/posts") 
-      : path.join(process.cwd(), "src/app/work/projects");
-
-    const filePath = path.join(dir, filename.endsWith(".mdx") ? filename : `${filename}.mdx`);
+    const path = `${type}/${filename.endsWith(".mdx") ? filename : `${filename}.mdx`}`;
     
-    await fs.writeFile(filePath, content, "utf8");
+    await put(path, content, {
+      access: 'public',
+      contentType: 'text/markdown',
+    });
     
     return NextResponse.json({ success: true });
   } catch (error) {

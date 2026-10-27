@@ -25,7 +25,7 @@ import { notFound } from "next/navigation";
 
 function getMDXFiles(dir: string) {
   if (!fs.existsSync(dir)) {
-    notFound();
+    return [];
   }
 
   return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
@@ -33,7 +33,7 @@ function getMDXFiles(dir: string) {
 
 function readMDXFile(filePath: string) {
   if (!fs.existsSync(filePath)) {
-    notFound();
+    throw new Error("File not found");
   }
 
   const rawContent = fs.readFileSync(filePath, "utf-8");
@@ -69,8 +69,14 @@ function getMDXData(dir: string) {
 }
 
 export function getPosts(customPath = ["", "", "", ""]) {
-  // Posts are read at build time. The ignore comment keeps Next from tracing
-  // the whole project (images and video included) into every server function.
   const postsDir = path.join(/* turbopackIgnore: true */ process.cwd(), ...customPath);
   return getMDXData(postsDir);
+}
+
+export async function getPostsCloud(type: "blog" | "work") {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click";
+  const res = await fetch(`${baseUrl}/api/content/files`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return type === "blog" ? data.posts : data.projects;
 }

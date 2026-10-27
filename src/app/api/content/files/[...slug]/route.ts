@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { del } from "@vercel/blob";
 import { auth } from "@/auth";
 
 async function isAuthenticated(request: NextRequest) {
@@ -22,17 +21,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ message: "Invalid type" }, { status: 400 });
     }
 
-    const dir = type === "blog" 
-      ? path.join(process.cwd(), "src/app/blog/posts") 
-      : path.join(process.cwd(), "src/app/work/projects");
+    // In a real app, you'd look up the URL from a database or index.
+    // For this simple setup, we can use the known pattern:
+    // We need the actual URL of the blob. Since the blob name is the path, 
+    // we can't just "guess" the URL without a list.
+    // However, the client already has the name. 
+    // Let's use the list API to find the exact URL.
+    
+    const { blobs } = await import("@vercel/blob").then(m => m.list({ prefix: `${type}/${filename}` }));
+    const blob = blobs.find(b => b.pathname === `${type}/${filename}`);
 
-    const filePath = path.join(dir, filename);
-    const content = await fs.readFile(filePath, "utf8");
+    if (!blob) {
+      return NextResponse.json({ message: "File not found" }, { status: 404 });
+    }
+
+    const response = await fetch(blob.url);
+    const content = await response.text();
     
     return NextResponse.json({ content });
   } catch (error) {
     console.error("Error reading file:", error);
-    return NextResponse.json({ message: "File not found" }, { status: 404 });
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -50,12 +59,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ message: "Invalid type" }, { status: 400 });
     }
 
-    const dir = type === "blog" 
-      ? path.join(process.cwd(), "src/app/blog/posts") 
-      : path.join(process.cwd(), "src/app/work/projects");
-
-    const filePath = path.join(dir, filename);
-    await fs.unlink(filePath);
+    const path = `${type}/${filename}`;
+    await del(path);
     
     return NextResponse.json({ success: true });
   } catch (error) {

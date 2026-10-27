@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import "katex/dist/katex.min.css";
-import { getPosts } from "@/utils/utils";
+import { getPostsCloud } from "@/utils/utils";
 import {
   Meta,
   Schema,
@@ -22,13 +22,6 @@ import { ScrollToHash, CustomMDX } from "@/components";
 import { Metadata } from "next";
 import { Projects } from "@/components/work/Projects";
 
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const posts = getPosts(["src", "app", "work", "projects"]);
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -39,8 +32,8 @@ export async function generateMetadata({
     ? routeParams.slug.join("/")
     : routeParams.slug || "";
 
-  const posts = getPosts(["src", "app", "work", "projects"]);
-  let post = posts.find((post) => post.slug === slugPath);
+  const posts = await getPostsCloud("work");
+  let post = posts.find((post: any) => post.slug === slugPath);
 
   if (!post) return {};
 
@@ -48,50 +41,55 @@ export async function generateMetadata({
     title: post.metadata.title,
     description: post.metadata.summary,
     baseURL: baseURL,
-    image: post.metadata.image || `/api/og/generate?title=${post.metadata.title}`,
-    path: `${work.path}/${post.slug}`,
+    image: post.metadata.image || \`/api/og/generate?title=\${post.metadata.title}\`,
+    path: \`\${work.path}/\${post.slug}\`,
   });
 }
 
 export default async function Project({
   params,
 }: {
-  params: Promise<{ slug: string | string[] }>;
-}) {
+  params: Promise<{ slug: string | string[] }> }) {
   const routeParams = await params;
   const slugPath = Array.isArray(routeParams.slug)
     ? routeParams.slug.join("/")
     : routeParams.slug || "";
 
-  let post = getPosts(["src", "app", "work", "projects"]).find((post) => post.slug === slugPath);
+  const posts = await getPostsCloud("work");
+  let post = posts.find((post: any) => post.slug === slugPath);
 
   if (!post) {
     notFound();
   }
 
   const avatars =
-    post.metadata.team?.map((person) => ({
-      src: person.avatar,
-      "aria-label": person.name,
+    post.metadata.team?.map((member: any) => ({
+      src: member.avatar,
+      "aria-label": member.name,
     })) || [];
+
+  const contentRes = await fetch(\`\${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click"}/api/content/files/work/\${post.name}\`, {
+    next: { revalidate: 60 }
+  });
+  const { content } = await contentRes.json();
 
   return (
     <Column as="section" maxWidth="m" horizontal="center" gap="l">
       <Schema
         as="blogPosting"
         baseURL={baseURL}
-        path={`${work.path}/${post.slug}`}
+        path={\`\${work.path}/\${post.slug}\`}
         title={post.metadata.title}
         description={post.metadata.summary}
         datePublished={post.metadata.publishedAt}
         dateModified={post.metadata.publishedAt}
         image={
-          post.metadata.image || `/api/og/generate?title=${encodeURIComponent(post.metadata.title)}`
+          post.metadata.image || \`/api/og/generate?title=\${encodeURIComponent(post.metadata.title)}\`
         }
         author={{
           name: person.name,
-          url: `${baseURL}${about.path}`,
-          image: `${baseURL}${person.avatar}`,
+          url: \`\${baseURL}\${about.path}\`,
+          image: \`\${baseURL}\${person.avatar}\`,
         }}
       />
       <Column maxWidth="s" gap="16" horizontal="center" align="center">
@@ -107,7 +105,7 @@ export default async function Project({
         <Row gap="16" vertical="center">
           {post.metadata.team && <AvatarGroup reverse avatars={avatars} size="s" />}
           <Text variant="label-default-m" onBackground="brand-weak">
-            {post.metadata.team?.map((member, idx) => (
+            {post.metadata.team?.map((member: any, idx: number) => (
               <span key={idx}>
                 {idx > 0 && (
                   <Text as="span" onBackground="neutral-weak">
@@ -124,7 +122,7 @@ export default async function Project({
         <Media priority aspectRatio="16 / 9" radius="m" alt="image" src={post.metadata.images[0]} />
       )}
       <Column style={{ margin: "auto" }} as="article" maxWidth="xs">
-        <CustomMDX source={post.content} />
+        <CustomMDX source={content} />
       </Column>
       <Column fillWidth gap="40" horizontal="center" marginTop="40">
         <Line maxWidth="40" />
