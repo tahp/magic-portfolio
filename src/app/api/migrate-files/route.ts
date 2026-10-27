@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
       for (const file of mdxFiles) {
         const content = await fs.readFile(path.join(dir, file), "utf8");
-        const blobPath = `${type}/${file}`;
+        const blobPath = type + "/" + file;
         
         await put(blobPath, content, {
           access: 'public',
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ 
-      message: \`Successfully migrated \${uploadCount} files to Vercel Blob!\` 
+      message: "Successfully migrated " + uploadCount + " files to Vercel Blob!" 
     });
   } catch (error) {
     console.error("Migration error:", error);
