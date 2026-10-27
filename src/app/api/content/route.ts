@@ -27,12 +27,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "No content found" }, { status: 404 });
     }
 
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-      },
-    });
-
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch blob: ${response.statusText}`);
     }
@@ -56,6 +51,7 @@ export async function POST(request: NextRequest) {
     const content = JSON.stringify(body, null, 2);
     
     const blob = await put(FILENAME, content, {
+      access: 'public',
       contentType: 'application/json',
     });
 

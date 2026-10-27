@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const data = await fs.readFile(CONTENT_PATH, "utf8");
     
     await put(FILENAME, data, {
-      access: 'private',
+      access: 'public',
       contentType: 'application/json',
     });
 
