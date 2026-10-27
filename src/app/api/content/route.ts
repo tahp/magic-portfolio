@@ -27,15 +27,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "No content found" }, { status: 404 });
     }
 
-    // For private stores, we must provide the token to fetch the blob
     const response = await fetch(url, {
       headers: {
-        Authorization: \`Bearer \${process.env.BLOB_READ_WRITE_TOKEN}\`,
+        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
       },
     });
 
     if (!response.ok) {
-      throw new Error(\`Failed to fetch blob: \${response.statusText}\`);
+      throw new Error(`Failed to fetch blob: ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -56,7 +55,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const content = JSON.stringify(body, null, 2);
     
-    // Remove access: 'public' because the store is private
     const blob = await put(FILENAME, content, {
       contentType: 'application/json',
     });
