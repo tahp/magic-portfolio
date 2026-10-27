@@ -2,7 +2,7 @@
   "person": {
     "firstName": "Neung",
     "lastName": "Khunprachansri",
-    "name": "Selene Yu",
+    "name": "Neung Khunprachansri",
     "role": "Design Engineer",
     "avatar": "/images/avatar.jpg",
     "email": "mixtacyrecords@gmail.comcom",
@@ -54,7 +54,7 @@
     "path": "/",
     "image": "/images/og/home.jpg",
     "label": "Home",
-    "title": "Selene Yu's Portfolio",
+    "title": "Neung Khunprachansri's Portfolio",
     "description": "Portfolio website showcasing my work as a Design Engineer",
     "headline": "hello",
     "featured": {
@@ -67,8 +67,8 @@
   "about": {
     "path": "/about",
     "label": "About",
-    "title": "About – Selene Yu",
-    "description": "Meet Selene Yu, Design Engineer from Asia/Jakarta",
+    "title": "About – Neung Khunprachansri",
+    "description": "Meet Neung Khunprachansri, Design Engineer from Asia/Jakarta",
     "tableOfContent": {
       "display": true,
       "subItems": false
@@ -193,19 +193,19 @@
     "path": "/blog",
     "label": "Blog",
     "title": "Writing about design and tech...",
-    "description": "Read what Selene Yu has been up to recently"
+    "description": "Read what Neung Khunprachansri has been up to recently"
   },
   "work": {
     "path": "/work",
     "label": "Work",
-    "title": "Projects – Selene Yu",
-    "description": "Design and dev projects by Selene Yu"
+    "title": "Projects – Neung Khunprachansri",
+    "description": "Design and dev projects by Neung Khunprachansri"
   },
   "gallery": {
     "path": "/gallery",
     "label": "Gallery",
-    "title": "Photo gallery – Selene Yu",
-    "description": "A photo collection by Selene Yu",
+    "title": "Photo gallery – Neung Khunprachansri",
+    "description": "A photo collection by Neung Khunprachansri",
     "images": [
       {
         "src": "/images/gallery/upload-1793043701630-0_a_nude_23_year_old_brazil_model__she_is_looking_down_and_is_sitting_on_a_big_disco_ball_-clothing__swim_suit__dark_4226602874.png",
