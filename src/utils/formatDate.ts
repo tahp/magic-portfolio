@@ -1,4 +1,6 @@
 export function formatDate(date: string, includeRelative = false) {
+  if (!date) return "Unknown Date";
+  
   const currentDate = new Date();
 
   if (!date.includes("T")) {
@@ -6,6 +8,12 @@ export function formatDate(date: string, includeRelative = false) {
   }
 
   const targetDate = new Date(date);
+  
+  // Handle invalid dates (e.g. if date is a string but not a valid date format)
+  if (isNaN(targetDate.getTime())) {
+    return "Invalid Date";
+  }
+
   const timeDifference = currentDate.getTime() - targetDate.getTime();
   const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   const hoursAgo = Math.floor(timeDifference / (1000 * 60 * 60));

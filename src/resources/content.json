@@ -1,0 +1,262 @@
+{
+  "person": {
+    "firstName": "Neung",
+    "lastName": "Khunprachansri",
+    "name": "Selene Yu",
+    "role": "Design Engineer",
+    "avatar": "/images/avatar.jpg",
+    "email": "mixtacyrecords@gmail.comcom",
+    "location": "Asia/Jakarta",
+    "languages": [
+      "English",
+      "Bahasa"
+    ],
+    "locale": "en"
+  },
+  "newsletter": {
+    "display": true,
+    "title": "Subscribe to Selene's Newsletter",
+    "description": "My weekly newsletter about creativity and engineering"
+  },
+  "social": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "link": "https://github.com/tahp",
+      "essential": true
+    },
+    {
+      "name": "LinkedIn",
+      "icon": "linkedin",
+      "link": "https://www.linkedin.com/company/once-ui/",
+      "essential": true
+    },
+    {
+      "name": "Instagram",
+      "icon": "instagram",
+      "link": "https://www.instagram.com/tahp",
+      "essential": false
+    },
+    {
+      "name": "Threads",
+      "icon": "threads",
+      "link": "https://www.threads.com/@once_ui",
+      "essential": true
+    },
+    {
+      "name": "Email",
+      "icon": "email",
+      "link": "mailto:mixtacyrecords@gmail.com",
+      "essential": true
+    }
+  ],
+  "home": {
+    "path": "/",
+    "image": "/images/og/home.jpg",
+    "label": "Home",
+    "title": "Selene Yu's Portfolio",
+    "description": "Portfolio website showcasing my work as a Design Engineer",
+    "headline": "hello",
+    "featured": {
+      "display": true,
+      "title": "Once UI - Featured work",
+      "href": "/work/building-once-ui-a-customizable-design-system"
+    },
+    "subline": "Im Neung"
+  },
+  "about": {
+    "path": "/about",
+    "label": "About",
+    "title": "About – Selene Yu",
+    "description": "Meet Selene Yu, Design Engineer from Asia/Jakarta",
+    "tableOfContent": {
+      "display": true,
+      "subItems": false
+    },
+    "avatar": {
+      "display": true
+    },
+    "calendar": {
+      "display": true,
+      "link": "https://cal.com"
+    },
+    "intro": {
+      "display": true,
+      "title": "Introduction",
+      "description": "RtheFEshow.click"
+    },
+    "work": {
+      "display": true,
+      "title": "Work Experience",
+      "experiences": [
+        {
+          "company": "FLY",
+          "timeframe": "2022 - Present",
+          "role": "Senior Design Engineer",
+          "achievements": [
+            "Redesigned the UI/UX for the FLY platform, resulting in a 20% increase in user engagement and 30% faster load times.",
+            "Spearheaded the integration of AI tools into design workflows, enabling designers to iterate 50% faster."
+          ],
+          "images": [
+            {
+              "src": "/images/projects/project-01/cover-01.jpg",
+              "alt": "Once UI Project",
+              "width": 16,
+              "height": 9
+            }
+          ]
+        },
+        {
+          "company": "Creativ3",
+          "timeframe": "2018 - 2022",
+          "role": "Lead Designer",
+          "achievements": [
+            "Developed a design system that unified the brand across multiple platforms, improving design consistency by 40%.",
+            "Led a cross-functional team to launch a new product line, contributing to a 15% increase in overall company revenue."
+          ],
+          "images": []
+        }
+      ]
+    },
+    "studies": {
+      "display": true,
+      "title": "Studies",
+      "institutions": [
+        {
+          "name": "University of Jakarta",
+          "description": "Studied software engineering."
+        },
+        {
+          "name": "Build the Future",
+          "description": "Studied online marketing and personal branding."
+        }
+      ]
+    },
+    "technical": {
+      "display": true,
+      "title": "Technical skills",
+      "skills": [
+        {
+          "title": "Figma",
+          "description": "Able to prototype in Figma with Once UI with unnatural speed.",
+          "tags": [
+            {
+              "name": "Figma",
+              "icon": "figma"
+            }
+          ],
+          "images": [
+            {
+              "src": "/images/projects/project-01/cover-02.jpg",
+              "alt": "Project image",
+              "width": 16,
+              "height": 9
+            },
+            {
+              "src": "/images/projects/project-01/cover-03.jpg",
+              "alt": "Project image",
+              "width": 16,
+              "height": 9
+            }
+          ]
+        },
+        {
+          "title": "Next.js",
+          "description": "Building next gen apps with Next.js + Once UI + Supabase.",
+          "tags": [
+            {
+              "name": "JavaScript",
+              "icon": "javascript"
+            },
+            {
+              "name": "Next.js",
+              "icon": "nextjs"
+            },
+            {
+              "name": "Supabase",
+              "icon": "supabase"
+            }
+          ],
+          "images": [
+            {
+              "src": "/images/projects/project-01/cover-04.jpg",
+              "alt": "Project image",
+              "width": 16,
+              "height": 9
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "blog": {
+    "path": "/blog",
+    "label": "Blog",
+    "title": "Writing about design and tech...",
+    "description": "Read what Selene Yu has been up to recently"
+  },
+  "work": {
+    "path": "/work",
+    "label": "Work",
+    "title": "Projects – Selene Yu",
+    "description": "Design and dev projects by Selene Yu"
+  },
+  "gallery": {
+    "path": "/gallery",
+    "label": "Gallery",
+    "title": "Photo gallery – Selene Yu",
+    "description": "A photo collection by Selene Yu",
+    "images": [
+      {
+        "src": "/images/gallery/upload-1793043701630-0_a_nude_23_year_old_brazil_model__she_is_looking_down_and_is_sitting_on_a_big_disco_ball_-clothing__swim_suit__dark_4226602874.png",
+        "alt": "0_a_nude_23_year_old_brazil_model__she_is_looking_down_and_is_sitting_on_a_big_disco_ball_-clothing__swim_suit__dark_4226602874.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044377696-0_full_body_shot_of_a_19_year_old_college_freshman___influencers_fair_body_model_sitting_on_a_leather_chair_in_a_well_lit_night_club_office___she_has_straight_silky_silver_hair_draped_o_1844877713.png",
+        "alt": "0_full_body_shot_of_a_19_year_old_college_freshman___influencers_fair_body_model_sitting_on_a_leather_chair_in_a_well_lit_night_club_office___she_has_straight_silky_silver_hair_draped_o_1844877713.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044391726-0_full_body_shot_of_a_19_year_old_college_freshman___influencers_fair_body_model_sitting_on_a_leather_chair_in_a_well_lit_night_club_office___she_has_straight_silky_silver_hair_draped_o_3410317988.png",
+        "alt": "0_full_body_shot_of_a_19_year_old_college_freshman___influencers_fair_body_model_sitting_on_a_leather_chair_in_a_well_lit_night_club_office___she_has_straight_silky_silver_hair_draped_o_3410317988.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044397876-0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_1333701695.png",
+        "alt": "0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_1333701695.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044402587-0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_2000731867.png",
+        "alt": "0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_2000731867.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044414331-0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_2150416906.png",
+        "alt": "0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_2150416906.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044425858-0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_3778023182.png",
+        "alt": "0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_night_club_office___she_has_straight_silky_silver_hair_draped_over_the_left_side_of__her_body_3778023182.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044432705-0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_tattoo_studio__detailed_full_body_neo_traditional_tattoos_covering_her_arms__torso__and_legs__1126381861.png",
+        "alt": "0_full_body_shot_of_a_25_year_old_fair_body_model_sitting_on_a_leather_chair_in_a_dimly_lit_tattoo_studio__detailed_full_body_neo_traditional_tattoos_covering_her_arms__torso__and_legs__1126381861.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044444851-ComfyUI_00002_.png",
+        "alt": "ComfyUI_00002_.png",
+        "orientation": "Verticle"
+      },
+      {
+        "src": "/images/gallery/upload-1793044452287-ComfyUI_00003_.png",
+        "alt": "ComfyUI_00003_.png",
+        "orientation": "Verticle"
+      }
+    ]
+  }
+}

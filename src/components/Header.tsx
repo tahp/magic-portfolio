@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 
 import { Fade, Flex, Line, Row, ToggleButton } from "@once-ui-system/core";
+import { useSession } from "next-auth/react";
 
 import { routes, display, person, about, blog, work, gallery } from "@/resources";
 import type { IconName } from "@/resources/icons";
@@ -41,8 +42,6 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ timeZone, locale = "en-GB" })
   return <>{currentTime}</>;
 };
 
-export default TimeDisplay;
-
 // Pages in the menu, in order. A page shows when its route is enabled in
 // src/resources/once-ui.config.ts; add a page here to give it a menu item.
 const navItems: { href: keyof typeof routes; icon: IconName; label: string }[] = [
@@ -54,6 +53,7 @@ const navItems: { href: keyof typeof routes; icon: IconName; label: string }[] =
 
 export const Header = () => {
   const pathname = usePathname() ?? "";
+  const { data: session } = useSession();
 
   return (
     <>
@@ -127,6 +127,14 @@ export const Header = () => {
                       </Row>
                     </Fragment>
                   ),
+              )}
+              {session && (
+                <ToggleButton
+                  prefixIcon="settings"
+                  href="/admin"
+                  aria-label="Admin"
+                  selected={pathname.startsWith("/admin")}
+                />
               )}
               {display.themeSwitcher && (
                 <>

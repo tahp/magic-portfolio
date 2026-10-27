@@ -22,6 +22,8 @@ const routes: RoutesConfig = {
   "/work": true,
   "/blog": true,
   "/gallery": true,
+  "/admin": true,
+  "/admin/login": true,
 };
 
 const display: DisplayConfig = {
@@ -133,7 +135,7 @@ const effects: EffectsConfig = {
   lines: {
     display: false,
     opacity: 100,
-    color: "neutral-alpha-weak",
+    color: "neutral-alpha-medium",
     size: "16",
     thickness: 1,
     angle: 45,
