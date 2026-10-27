@@ -209,7 +209,7 @@ export default function AdminPage() {
         const newImage = {
           src: data.path,
           alt: file.name,
-          orientation: "horizontal",
+          orientation: "landscape",
         };
         const updatedGallery = [...(content.gallery?.images || []), newImage];
         setContent({ ...content, gallery: { ...content.gallery, images: updatedGallery } });
@@ -693,53 +693,59 @@ export default function AdminPage() {
                 </Flex>
 
                 <Column gap="12" width="100%">
-                  {content.gallery?.images.map((img: any, index: number) => (
-                    <Flex 
-                      key={index} 
-                      gap="12" 
-                      align="center" 
-                      padding="12" 
-                      background="neutral-alpha-weak" 
-                      radius="m" 
-                      width="100%"
-                      style={{ flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "center" }}
-                    >
-                      <Flex width="100px" align="center" justify="center" overflow="hidden" radius="s" background="neutral-alpha-medium" height="40px">
-                        <img src={img.src} alt={img.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      </Flex>
-                      <Input 
-                        id={`gallery-alt-${index}`}
-                        placeholder="Alt Text"
-                        value={img.alt} 
-                        onChange={(e) => {
-                          const updatedImages = [...content.gallery.images];
-                          updatedImages[index].alt = e.target.value;
-                          setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
-                        }}
-                        width={isMobile ? "100%" : "30%"}
-                      />
-                      <Input 
-                        id={`gallery-orientation-${index}`}
-                        placeholder="Orientation"
-                        value={img.orientation} 
-                        onChange={(e) => {
-                          const updatedImages = [...content.gallery.images];
-                          updatedImages[index].orientation = e.target.value;
-                          setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
-                        }}
-                        width={isMobile ? "100%" : "20%"}
-                      />
-                      <Button 
-                        variant="secondary" 
-                        onClick={() => {
-                          const updatedImages = content.gallery.images.filter((_: any, i: number) => i !== index);
-                          setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
-                        }}
+                  {content.gallery?.images.map((img: any, index: number) => {
+                    const isLandscape = img.orientation === "landscape" || img.orientation === "horizontal";
+                    const toggleOrientation = () => {
+                      const updatedImages = [...content.gallery.images];
+                      updatedImages[index].orientation = isLandscape ? "portrait" : "landscape";
+                      setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
+                    };
+
+                    return (
+                      <Flex 
+                        key={index} 
+                        gap="12" 
+                        align="center" 
+                        padding="12" 
+                        background="neutral-alpha-weak" 
+                        radius="m" 
+                        width="100%"
+                        style={{ flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "center" }}
                       >
-                        Delete
-                      </Button>
-                    </Flex>
-                  ))}
+                        <Flex width="100px" align="center" justify="center" overflow="hidden" radius="s" background="neutral-alpha-medium" height="40px">
+                          <img src={img.src} alt={img.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </Flex>
+                        <Input 
+                          id={`gallery-alt-${index}`}
+                          placeholder="Alt Text"
+                          value={img.alt} 
+                          onChange={(e) => {
+                            const updatedImages = [...content.gallery.images];
+                            updatedImages[index].alt = e.target.value;
+                            setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
+                          }}
+                          width={isMobile ? "100%" : "30%"}
+                        />
+                        <Button 
+                          variant={isLandscape ? "secondary" : "ghost"} 
+                          onClick={toggleOrientation}
+                          width={isMobile ? "100%" : "20%"}
+                          size="sm"
+                        >
+                          {isLandscape ? "Landscape" : "Portrait"}
+                        </Button>
+                        <Button 
+                          variant="secondary" 
+                          onClick={() => {
+                            const updatedImages = content.gallery.images.filter((_: any, i: number) => i !== index);
+                            setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Flex>
+                    );
+                  })}
                   {(!content.gallery?.images || content.gallery.images.length === 0) && (
                     <Flex padding="32" justify="center" width="100%">
                       <Text size="sm" onBackground="neutral-medium">No images in gallery.</Text>
