@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
   try {
     const data = await fs.readFile(CONTENT_PATH, "utf8");
     
+    // Remove access: 'public' because the store is private
     await put(FILENAME, data, {
-      access: 'public',
       contentType: 'application/json',
     });
 
