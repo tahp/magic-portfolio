@@ -36,6 +36,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
 
   // Notification state
@@ -51,6 +53,12 @@ export default function AdminPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
     async function loadAll() {
       try {
         const contentRes = await fetch("/api/content");
@@ -78,6 +86,7 @@ export default function AdminPage() {
       }
     }
     loadAll();
+    return () => window.removeEventListener("resize", handleResize);
   }, [router]);
 
   const notify = (message: string, type: "success" | "error" = "success") => {
@@ -254,14 +263,13 @@ export default function AdminPage() {
 
   const FileTable = ({ title, data, type }: { title: string, data: any[], type: "blog" | "work" }) => (
     <Column gap="16" width="100%">
-      <Flex justify="space-between" align="center" width="100%">
-        <Text weight="strong" size="lg">{title}</Text>
-      </Flex>
+      <Text weight="strong" size="lg">{title}</Text>
       <Flex direction="column" style={{ border: "1px solid var(--neutral-alpha-medium)", borderRadius: "8px", overflow: "hidden", width: "100%" }}>
         <Flex 
           background="neutral-alpha-weak" 
           padding="12" 
           borderBottom="1px solid var(--neutral-alpha-medium)"
+          style={{ display: "none", sm: { display: "flex" } }}
         >
           <Text weight="strong" flex={1} size="sm">Filename</Text>
           <Text weight="strong" width="80px" textAlign="center" size="sm">View</Text>
@@ -276,7 +284,7 @@ export default function AdminPage() {
               align="center" 
               style={{ borderBottom: "1px solid var(--neutral-alpha-medium)", width: "100%" }}
             >
-              <Text flex={1} size="sm">{file.name}</Text>
+              <Text flex={1} size="sm" style={{ wordBreak: "break-all" }}>{file.name}</Text>
               <Flex width="80px" justify="center">
                 <Button 
                   size="sm" 
@@ -325,6 +333,42 @@ export default function AdminPage() {
         />
       )}
 
+      {/* Mobile Top Bar */}
+      {isMobile && (
+        <Flex 
+          position="fixed" 
+          top="0" 
+          left="0" 
+          right="0" 
+          height="64px" 
+          background="neutral-alpha-weak" 
+          padding="0 24" 
+          align="center" 
+          justify="space-between" 
+          zIndex={50} 
+          borderBottom="1px solid var(--neutral-alpha-medium)"
+        >
+          <Flex align="center" gap="12">
+            <Button 
+              variant="secondary" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              size="sm"
+            >
+              ☰
+            </Button>
+            <Text weight="strong">Studio</Text>
+          </Flex>
+          <Button 
+            variant="primary" 
+            onClick={handleSaveGeneral} 
+            disabled={saving}
+            size="sm"
+          >
+            Save
+          </Button>
+        </Flex>
+      )}
+
       {/* Sidebar Navigation */}
       <Column 
         width="260px" 
@@ -332,7 +376,16 @@ export default function AdminPage() {
         padding="24" 
         gap="32" 
         borderRight="1px solid var(--neutral-alpha-medium)"
-        style={{ height: "100%", position: "sticky", top: 0 }}
+        style={{ 
+          height: "100%", 
+          position: isMobile ? "fixed" : "sticky", 
+          top: 0,
+          left: 0,
+          zIndex: 60,
+          transition: "transform 0.3s ease",
+          transform: isMobile && !isMobileMenuOpen ? "translateX(-100%)" : "translateX(0)",
+          boxShadow: isMobile && isMobileMenuOpen ? "10px 0 15px rgba(0,0,0,0.1)" : "none",
+        }}
       >
         <Column gap="8">
           <Text size="lg" weight="strong">Portfolio Studio</Text>
@@ -349,7 +402,10 @@ export default function AdminPage() {
             <Button 
               key={item.id} 
               variant={activeTab === item.id ? "primary" : "ghost"} 
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (isMobile) setIsMobileMenuOpen(false);
+              }}
               width="100%"
               textAlign="left"
               padding="12"
@@ -361,42 +417,66 @@ export default function AdminPage() {
         </Column>
 
         <Column gap="12" style={{ marginTop: "auto" }}>
-          <Button 
-            variant="primary" 
-            onClick={handleSaveGeneral} 
-            disabled={saving}
-            width="100%"
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          {!isMobile && (
+            <Button 
+              variant="primary" 
+              onClick={handleSaveGeneral} 
+              disabled={saving}
+              width="100%"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
           <Text size="xs" textAlign="center" onBackground="neutral-medium">
             v2.3.0 Studio
           </Text>
         </Column>
       </Column>
 
+      {/* Overlay for mobile menu */}
+      {isMobile && isMobileMenuOpen && (
+        <div 
+          onClick={() => setIsMobileMenuOpen(false)}
+          style={{ 
+            position: "fixed", 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            background: "rgba(0,0,0,0.5)", 
+            zIndex: 55 
+          }} 
+        />
+      )}
+
       {/* Main Content Area */}
       <Column 
         flex={1} 
-        padding="40" 
+        padding={isMobile ? "24" : "40"} 
         gap="32" 
-        style={{ overflowY: "auto", height: "100vh" }}
+        style={{ 
+          overflowY: "auto", 
+          height: "100vh", 
+          paddingTop: isMobile ? "88px" : "40px" 
+        }}
       >
-        <Flex justify="space-between" align="center" width="100%">
-          <Column gap="4">
-            <Text size="xl" weight="strong">
-              { [
-                { id: "profile", label: "Account Info" },
-                { id: "pages", label: "Site Information" },
-                { id: "content", label: "Content Management" },
-                { id: "gallery", label: "Media Gallery" },
-              ].find(t => t.id === activeTab)?.label }
-            </Text>
-            <Text size="sm" onBackground="neutral-medium">
-              Manage your portfolio's { activeTab === "profile" ? "personal details" : activeTab === "pages" ? "static content" : activeTab === "content" ? "posts and projects" : "images" }.
-            </Text>
-          </Column>
-        </Flex>
+        {!isMobile && (
+          <Flex justify="space-between" align="center" width="100%">
+            <Column gap="4">
+              <Text size="xl" weight="strong">
+                { [
+                  { id: "profile", label: "Account Info" },
+                  { id: "pages", label: "Site Information" },
+                  { id: "content", label: "Content Management" },
+                  { id: "gallery", label: "Media Gallery" },
+                ].find(t => t.id === activeTab)?.label }
+              </Text>
+              <Text size="sm" onBackground="neutral-medium">
+                Manage your portfolio's { activeTab === "profile" ? "personal details" : activeTab === "pages" ? "static content" : activeTab === "content" ? "posts and projects" : "images" }.
+              </Text>
+            </Column>
+          </Flex>
+        )}
 
         <Column gap="24" width="100%">
           {activeTab === "profile" && (
@@ -410,14 +490,14 @@ export default function AdminPage() {
                       label="First Name" 
                       value={content.person?.firstName || ""} 
                       onChange={(e) => setContent({ ...content, person: { ...content.person, firstName: e.target.value } })}
-                      width="50%"
+                      width={isMobile ? "100%" : "50%"}
                     />
                     <Input 
                       id="admin-last-name"
                       label="Last Name" 
                       value={content.person?.lastName || ""} 
                       onChange={(e) => setContent({ ...content, person: { ...content.person, lastName: e.target.value } })}
-                      width="50%"
+                      width={isMobile ? "100%" : "50%"}
                     />
                   </Flex>
                   <Input 
@@ -450,7 +530,7 @@ export default function AdminPage() {
                   <Column gap="12" width="100%">
                     {content.social?.map((link: any, index: number) => (
                       <Flex key={index} gap="16" align="center" width="100%">
-                        <Text size="sm" weight="strong" width="100px">{link.name}</Text>
+                        <Text size="sm" weight="strong" width={isMobile ? "auto" : "100px"}>{link.name}</Text>
                         <Input 
                           id={`admin-social-${index}`}
                           value={link.link} 
@@ -538,7 +618,7 @@ export default function AdminPage() {
                       />
                     </Flex>
                     <Column gap="12" width="100%">
-                      <Flex gap="8" padding="8" background="neutral-alpha-weak" radius="m" align="center">
+                      <Flex gap="8" padding="8" background="neutral-alpha-weak" radius="m" align="center" wrap="wrap">
                         <Button size="sm" variant="secondary" onClick={() => applyFormat("# ")}>H1</Button>
                         <Button size="sm" variant="secondary" onClick={() => applyFormat("## ")}>H2</Button>
                         <Button size="sm" variant="secondary" onClick={() => applyFormat("**", "**")}>Bold</Button>
@@ -605,7 +685,7 @@ export default function AdminPage() {
                   </Flex>
                 </Flex>
                 
-                <Flex gap="12" align="center" padding="12" background="neutral-alpha-weak" radius="m" width="100%">
+                <Flex gap="12" align="center" padding="12" background="neutral-alpha-weak" radius="m" width="100%" style={{ display: isMobile ? "none" : "flex" }}>
                   <Text size="sm" weight="strong" width="100px">Image</Text>
                   <Text size="sm" weight="strong" width="30%">Alt Text</Text>
                   <Text size="sm" weight="strong" width="20%">Orientation</Text>
@@ -614,7 +694,16 @@ export default function AdminPage() {
 
                 <Column gap="12" width="100%">
                   {content.gallery?.images.map((img: any, index: number) => (
-                    <Flex key={index} gap="12" align="center" padding="12" background="neutral-alpha-weak" radius="m" width="100%">
+                    <Flex 
+                      key={index} 
+                      gap="12" 
+                      align="center" 
+                      padding="12" 
+                      background="neutral-alpha-weak" 
+                      radius="m" 
+                      width="100%"
+                      style={{ flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "center" }}
+                    >
                       <Flex width="100px" align="center" justify="center" overflow="hidden" radius="s" background="neutral-alpha-medium" height="40px">
                         <img src={img.src} alt={img.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </Flex>
@@ -627,7 +716,7 @@ export default function AdminPage() {
                           updatedImages[index].alt = e.target.value;
                           setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
                         }}
-                        width="30%"
+                        width={isMobile ? "100%" : "30%"}
                       />
                       <Input 
                         id={`gallery-orientation-${index}`}
@@ -638,7 +727,7 @@ export default function AdminPage() {
                           updatedImages[index].orientation = e.target.value;
                           setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
                         }}
-                        width="20%"
+                        width={isMobile ? "100%" : "20%"}
                       />
                       <Button 
                         variant="secondary" 
