@@ -11,18 +11,39 @@ import {
   Card 
 } from "@once-ui-system/core";
 
+// Local Notification Component
+const Notification = ({ message, type, onClose }: { message: string, type: "success" | "error", onClose: () => void }) => (
+  <Flex 
+    position="fixed" 
+    bottom="24" 
+    right="24" 
+    zIndex={100} 
+    padding="12" 
+    radius="m" 
+    background={type === "success" ? "brand-strong" : "neutral-strong"} 
+    color="white" 
+    gap="12" 
+    align="center"
+    style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}
+  >
+    <Text size="sm">{message}</Text>
+    <Button variant="ghost" size="sm" onClick={onClose} style={{ color: "white" }}>✕</Button>
+  </Flex>
+);
+
 export default function AdminPage() {
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
+
+  // Notification state
+  const [notification, setNotification] = useState<{ message: string, type: "success" | "error" } | null>(null);
 
   // Content management state
   const [files, setFiles] = useState<{ posts: any[], projects: any[] }>({ posts: [], projects: [] });
   const [editingFile, setEditingFile] = useState<{ type: "blog" | "work", name: string, content: string } | null>(null);
-  const [fileLoading, setFileLoading] = useState(false);
   
   // Upload state
   const [uploading, setUploading] = useState(false);
@@ -32,7 +53,6 @@ export default function AdminPage() {
   useEffect(() => {
     async function loadAll() {
       try {
-        // Load general content
         const contentRes = await fetch("/api/content");
         if (contentRes.status === 401) {
           router.push("/admin/login");
@@ -43,7 +63,6 @@ export default function AdminPage() {
           setContent(contentData);
         }
 
-        // Load file list
         const filesRes = await fetch("/api/content/files");
         if (filesRes.ok) {
           const filesData = await filesRes.json();
@@ -61,6 +80,11 @@ export default function AdminPage() {
     loadAll();
   }, [router]);
 
+  const notify = (message: string, type: "success" | "error" = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
   const handleSaveGeneral = async () => {
     setSaving(true);
     try {
@@ -71,29 +95,28 @@ export default function AdminPage() {
       });
 
       if (res.ok) {
-        alert("Content saved successfully!");
+        notify("Portfolio content updated successfully");
       } else {
-        alert("Failed to save content.");
+        notify("Failed to save content", "error");
       }
     } catch (err) {
-      alert("An error occurred while saving.");
+      notify("An error occurred while saving", "error");
     } finally {
       setSaving(false);
     }
   };
 
   const loadFile = async (type: "blog" | "work", name: string) => {
-    setFileLoading(true);
     try {
       const res = await fetch(`/api/content/files/${type}/${name}`);
       if (res.ok) {
         const data = await res.json();
         setEditingFile({ type, name, content: data.content });
+      } else {
+        notify("Failed to load file content", "error");
       }
     } catch (err) {
-      alert("Failed to load file content.");
-    } finally {
-      setFileLoading(false);
+      notify("An error occurred while loading file", "error");
     }
   };
 
@@ -112,15 +135,15 @@ export default function AdminPage() {
       });
 
       if (res.ok) {
-        alert("File saved successfully!");
+        notify("File saved successfully");
         const filesRes = await fetch("/api/content/files");
         const filesData = await filesRes.json();
         setFiles({ posts: filesData.posts, projects: filesData.projects });
       } else {
-        alert("Failed to save file.");
+        notify("Failed to save file", "error");
       }
     } catch (err) {
-      alert("An error occurred while saving file.");
+      notify("An error occurred while saving file", "error");
     } finally {
       setSaving(false);
     }
@@ -135,16 +158,16 @@ export default function AdminPage() {
       });
 
       if (res.ok) {
-        alert("File deleted successfully!");
+        notify("File deleted successfully");
         const filesRes = await fetch("/api/content/files");
         const filesData = await filesRes.json();
         setFiles({ posts: filesData.posts, projects: filesData.projects });
         if (editingFile?.name === name) setEditingFile(null);
       } else {
-        alert("Failed to delete file.");
+        notify("Failed to delete file", "error");
       }
     } catch (err) {
-      alert("An error occurred while deleting.");
+      notify("An error occurred while deleting", "error");
     } finally {
       setSaving(false);
     }
@@ -181,13 +204,13 @@ export default function AdminPage() {
         };
         const updatedGallery = [...(content.gallery?.images || []), newImage];
         setContent({ ...content, gallery: { ...content.gallery, images: updatedGallery } });
-        alert("Image uploaded successfully!");
+        notify("Image uploaded successfully");
       } else {
         const errData = await res.json();
-        alert(`Upload failed: ${errData.message}`);
+        notify(`Upload failed: ${errData.message}`, "error");
       }
     } catch (err) {
-      alert("An error occurred while uploading.");
+      notify("An error occurred while uploading", "error");
     } finally {
       setUploading(false);
     }
@@ -215,41 +238,46 @@ export default function AdminPage() {
   };
 
   if (loading) return (
-    <Flex justify="center" align="center" height="400px" width="100%">
-      <Text>Loading admin panel...</Text>
+    <Flex justify="center" align="center" height="100vh" width="100%">
+      <Column align="center" gap="16">
+        <Text size="xl" weight="strong">Loading Studio...</Text>
+        <Text size="sm" onBackground="neutral-medium">Preparing your workspace</Text>
+      </Column>
     </Flex>
   );
 
   if (!content) return (
-    <Flex justify="center" align="center" height="400px" width="100%">
+    <Flex justify="center" align="center" height="100vh" width="100%">
       <Text>Failed to load portfolio content. Please check your server logs.</Text>
     </Flex>
   );
 
   const FileTable = ({ title, data, type }: { title: string, data: any[], type: "blog" | "work" }) => (
-    <Column gap="12" width="100%">
-      <Text weight="strong">{title}</Text>
-      <Flex direction="column" style={{ border: "1px solid var(--neutral-alpha-medium)", borderRadius: "4px", overflow: "hidden" }}>
+    <Column gap="16" width="100%">
+      <Flex justify="space-between" align="center" width="100%">
+        <Text weight="strong" size="lg">{title}</Text>
+      </Flex>
+      <Flex direction="column" style={{ border: "1px solid var(--neutral-alpha-medium)", borderRadius: "8px", overflow: "hidden", width: "100%" }}>
         <Flex 
           background="neutral-alpha-weak" 
-          padding="8" 
+          padding="12" 
           borderBottom="1px solid var(--neutral-alpha-medium)"
         >
           <Text weight="strong" flex={1} size="sm">Filename</Text>
-          <Text weight="strong" width="60px" textAlign="center" size="sm">View</Text>
-          <Text weight="strong" width="60px" textAlign="center" size="sm">Edit</Text>
-          <Text weight="strong" width="60px" textAlign="center" size="sm">Delete</Text>
+          <Text weight="strong" width="80px" textAlign="center" size="sm">View</Text>
+          <Text weight="strong" width="80px" textAlign="center" size="sm">Edit</Text>
+          <Text weight="strong" width="80px" textAlign="center" size="sm">Delete</Text>
         </Flex>
         {data.length > 0 ? (
           data.map((file: any) => (
             <Flex 
               key={file.name} 
-              padding="8" 
+              padding="12" 
               align="center" 
-              style={{ borderBottom: "1px solid var(--neutral-alpha-medium)" }}
+              style={{ borderBottom: "1px solid var(--neutral-alpha-medium)", width: "100%" }}
             >
               <Text flex={1} size="sm">{file.name}</Text>
-              <Flex width="60px" justify="center">
+              <Flex width="80px" justify="center">
                 <Button 
                   size="sm" 
                   variant="ghost" 
@@ -258,7 +286,7 @@ export default function AdminPage() {
                   View
                 </Button>
               </Flex>
-              <Flex width="60px" justify="center">
+              <Flex width="80px" justify="center">
                 <Button 
                   size="sm" 
                   variant="ghost" 
@@ -267,7 +295,7 @@ export default function AdminPage() {
                   Edit
                 </Button>
               </Flex>
-              <Flex width="60px" justify="center">
+              <Flex width="80px" justify="center">
                 <Button 
                   size="sm" 
                   variant="ghost" 
@@ -279,7 +307,7 @@ export default function AdminPage() {
             </Flex>
           ))
         ) : (
-          <Flex padding="16" justify="center">
+          <Flex padding="32" justify="center" width="100%">
             <Text size="sm" onBackground="neutral-medium">No items found.</Text>
           </Flex>
         )}
@@ -288,206 +316,260 @@ export default function AdminPage() {
   );
 
   return (
-    <Column gap="32" width="100%">
-      <Flex justify="space-between" align="center" width="100%">
-        <Flex align="center" gap="12">
-          <Button 
-            variant="secondary" 
-            onClick={() => setMenuOpen(!menuOpen)}
-            size="sm"
-          >
-            ☰ Menu
-          </Button>
-          <Text size="xl" weight="strong">Manage Portfolio</Text>
-        </Flex>
-        <Button 
-          variant="primary" 
-          onClick={handleSaveGeneral} 
-          disabled={saving}
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
-      </Flex>
-
-      {menuOpen && (
-        <Card width="240px" position="absolute" zIndex={10} style={{ marginTop: "-20px" }}>
-          <Column gap="4">
-            {[
-              { id: "profile", label: "Profile & Social" },
-              { id: "pages", label: "Page Text" },
-              { id: "content", label: "Posts & Projects" },
-              { id: "gallery", label: "Gallery" },
-            ].map((item) => (
-              <Button 
-                key={item.id} 
-                variant={activeTab === item.id ? "primary" : "ghost"} 
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMenuOpen(false);
-                }}
-                width="100%"
-                textAlign="left"
-              >
-                {item.label}
-              </Button>
-            ))}
-          </Column>
-        </Card>
+    <Flex width="100%" height="100vh" position="relative">
+      {notification && (
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification(null)} 
+        />
       )}
 
-      <Card width="100%">
-        <Column gap="24">
+      {/* Sidebar Navigation */}
+      <Column 
+        width="260px" 
+        background="neutral-alpha-weak" 
+        padding="24" 
+        gap="32" 
+        borderRight="1px solid var(--neutral-alpha-medium)"
+        style={{ height: "100%", position: "sticky", top: 0 }}
+      >
+        <Column gap="8">
+          <Text size="lg" weight="strong">Portfolio Studio</Text>
+          <Text size="sm" onBackground="neutral-medium">Control Center</Text>
+        </Column>
+
+        <Column gap="8">
+          {[
+            { id: "profile", label: "Account info" },
+            { id: "pages", label: "Site Info" },
+            { id: "content", label: "Posts & Projects" },
+            { id: "gallery", label: "Gallery" },
+          ].map((item) => (
+            <Button 
+              key={item.id} 
+              variant={activeTab === item.id ? "primary" : "ghost"} 
+              onClick={() => setActiveTab(item.id)}
+              width="100%"
+              textAlign="left"
+              padding="12"
+            >
+              {item.label}
+              {activeTab === item.id && <Text size="xs" marginLeft="auto">✓</Text>}
+            </Button>
+          ))}
+        </Column>
+
+        <Column gap="12" style={{ marginTop: "auto" }}>
+          <Button 
+            variant="primary" 
+            onClick={handleSaveGeneral} 
+            disabled={saving}
+            width="100%"
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+          <Text size="xs" textAlign="center" onBackground="neutral-medium">
+            v2.3.0 Studio
+          </Text>
+        </Column>
+      </Column>
+
+      {/* Main Content Area */}
+      <Column 
+        flex={1} 
+        padding="40" 
+        gap="32" 
+        style={{ overflowY: "auto", height: "100vh" }}
+      >
+        <Flex justify="space-between" align="center" width="100%">
+          <Column gap="4">
+            <Text size="xl" weight="strong">
+              { [
+                { id: "profile", label: "Account Info" },
+                { id: "pages", label: "Site Information" },
+                { id: "content", label: "Content Management" },
+                { id: "gallery", label: "Media Gallery" },
+              ].find(t => t.id === activeTab)?.label }
+            </Text>
+            <Text size="sm" onBackground="neutral-medium">
+              Manage your portfolio's { activeTab === "profile" ? "personal details" : activeTab === "pages" ? "static content" : activeTab === "content" ? "posts and projects" : "images" }.
+            </Text>
+          </Column>
+        </Flex>
+
+        <Column gap="24" width="100%">
           {activeTab === "profile" && (
-            <Column gap="16">
-              <Text weight="strong" size="lg">Personal Information</Text>
-              <Flex gap="12" wrap="wrap">
-                <Input 
-                  id="admin-first-name"
-                  label="First Name" 
-                  value={content.person?.firstName || ""} 
-                  onChange={(e) => setContent({ ...content, person: { ...content.person, firstName: e.target.value } })}
-                  width="50%"
-                />
-                <Input 
-                  id="admin-last-name"
-                  label="Last Name" 
-                  value={content.person?.lastName || ""} 
-                  onChange={(e) => setContent({ ...content, person: { ...content.person, lastName: e.target.value } })}
-                  width="50%"
-                />
-              </Flex>
-              <Input 
-                id="admin-role"
-                label="Role" 
-                value={content.person?.role || ""} 
-                onChange={(e) => setContent({ ...content, person: { ...content.person, role: e.target.value } })}
-                width="100%"
-              />
-              <Input 
-                id="admin-email"
-                label="Email" 
-                value={content.person?.email || ""} 
-                onChange={(e) => setContent({ ...content, person: { ...content.person, email: e.target.value } })}
-                width="100%"
-              />
-              <Input 
-                id="admin-location"
-                label="Location" 
-                value={content.person?.location || ""} 
-                onChange={(e) => setContent({ ...content, person: { ...content.person, location: e.target.value } })}
-                width="100%"
-              />
-              <Text weight="strong" size="lg" marginTop="24">Social Links</Text>
-              <Column gap="12" width="100%">
-                {content.social?.map((link: any, index: number) => (
-                  <Flex key={index} gap="12" align="center" width="100%">
-                    <Text size="sm" width="100px">{link.name}</Text>
+            <Column gap="24" width="100%">
+              <Card width="100%" style={{ padding: "24px" }}>
+                <Column gap="20">
+                  <Text weight="strong" size="lg">Personal Information</Text>
+                  <Flex gap="16" wrap="wrap" width="100%">
                     <Input 
-                      id={`admin-social-${index}`}
-                      value={link.link} 
-                      onChange={(e) => {
-                        const newSocial = [...content.social];
-                        newSocial[index].link = e.target.value;
-                        setContent({ ...content, social: newSocial });
-                      }}
-                      width="100%"
+                      id="admin-first-name"
+                      label="First Name" 
+                      value={content.person?.firstName || ""} 
+                      onChange={(e) => setContent({ ...content, person: { ...content.person, firstName: e.target.value } })}
+                      width="50%"
+                    />
+                    <Input 
+                      id="admin-last-name"
+                      label="Last Name" 
+                      value={content.person?.lastName || ""} 
+                      onChange={(e) => setContent({ ...content, person: { ...content.person, lastName: e.target.value } })}
+                      width="50%"
                     />
                   </Flex>
-                ))}
-              </Column>
+                  <Input 
+                    id="admin-role"
+                    label="Role" 
+                    value={content.person?.role || ""} 
+                    onChange={(e) => setContent({ ...content, person: { ...content.person, role: e.target.value } })}
+                    width="100%"
+                  />
+                  <Input 
+                    id="admin-email"
+                    label="Email" 
+                    value={content.person?.email || ""} 
+                    onChange={(e) => setContent({ ...content, person: { ...content.person, email: e.target.value } })}
+                    width="100%"
+                  />
+                  <Input 
+                    id="admin-location"
+                    label="Location" 
+                    value={content.person?.location || ""} 
+                    onChange={(e) => setContent({ ...content, person: { ...content.person, location: e.target.value } })}
+                    width="100%"
+                  />
+                </Column>
+              </Card>
+
+              <Card width="100%" style={{ padding: "24px" }}>
+                <Column gap="20">
+                  <Text weight="strong" size="lg">Social Links</Text>
+                  <Column gap="12" width="100%">
+                    {content.social?.map((link: any, index: number) => (
+                      <Flex key={index} gap="16" align="center" width="100%">
+                        <Text size="sm" weight="strong" width="100px">{link.name}</Text>
+                        <Input 
+                          id={`admin-social-${index}`}
+                          value={link.link} 
+                          onChange={(e) => {
+                            const newSocial = [...content.social];
+                            newSocial[index].link = e.target.value;
+                            setContent({ ...content, social: newSocial });
+                          }}
+                          width="100%"
+                        />
+                      </Flex>
+                    ))}
+                  </Column>
+                </Column>
+              </Card>
             </Column>
           )}
 
           {activeTab === "pages" && (
             <Column gap="24" width="100%">
-              <Column gap="16">
-                <Text weight="strong" size="lg">Home Page</Text>
-                <Input 
-                  id="admin-home-headline"
-                  label="Headline" 
-                  value={content.home?.headline || ""} 
-                  onChange={(e) => setContent({ ...content, home: { ...content.home, headline: e.target.value } })}
-                  width="100%"
-                />
-                <Input 
-                  id="admin-home-subline"
-                  label="Subline" 
-                  value={content.home?.subline || ""} 
-                  onChange={(e) => setContent({ ...content, home: { ...content.home, subline: e.target.value } })}
-                  width="100%"
-                />
-              </Column>
-              <Column gap="16">
-                <Text weight="strong" size="lg">About Page</Text>
-                <Input 
-                  id="admin-about-intro"
-                  label="Intro Description" 
-                  value={content.about?.intro?.description || ""} 
-                  onChange={(e) => setContent({ ...content, about: { ...content.about, intro: { ...content.about.intro, description: e.target.value } } })}
-                  width="100%"
-                />
-              </Column>
+              <Card width="100%" style={{ padding: "24px" }}>
+                <Column gap="20">
+                  <Text weight="strong" size="lg">Home Page</Text>
+                  <Input 
+                    id="admin-home-headline"
+                    label="Headline" 
+                    value={content.home?.headline || ""} 
+                    onChange={(e) => setContent({ ...content, home: { ...content.home, headline: e.target.value } })}
+                    width="100%"
+                  />
+                  <Input 
+                    id="admin-home-subline"
+                    label="Subline" 
+                    value={content.home?.subline || ""} 
+                    onChange={(e) => setContent({ ...content, home: { ...content.home, subline: e.target.value } })}
+                    width="100%"
+                  />
+                </Column>
+              </Card>
+
+              <Card width="100%" style={{ padding: "24px" }}>
+                <Column gap="20">
+                  <Text weight="strong" size="lg">About Page</Text>
+                  <Input 
+                    id="admin-about-intro"
+                    label="Intro Description" 
+                    value={content.about?.intro?.description || ""} 
+                    onChange={(e) => setContent({ ...content, about: { ...content.about, intro: { ...content.about.intro, description: e.target.value } } })}
+                    width="100%"
+                  />
+                </Column>
+              </Card>
             </Column>
           )}
 
           {activeTab === "content" && (
             <Column gap="24" width="100%">
               {editingFile ? (
-                <Column gap="16">
-                  <Flex justify="space-between" align="center">
-                    <Text weight="strong" size="lg">Editing {editingFile.type}: {editingFile.name}</Text>
-                    <Flex gap="12">
-                      <Button variant="secondary" onClick={() => setEditingFile(null)}>Cancel</Button>
-                      <Button variant="primary" onClick={saveFile} disabled={saving}>Save File</Button>
+                <Card width="100%" style={{ padding: "24px" }}>
+                  <Column gap="20">
+                    <Flex justify="space-between" align="center" width="100%">
+                      <Flex align="center" gap="8">
+                        <Button variant="ghost" size="sm" onClick={() => setEditingFile(null)}>← Back</Button>
+                        <Text weight="strong" size="lg">Editing {editingFile.type === "blog" ? "Post" : "Project"}</Text>
+                      </Flex>
+                      <Button variant="primary" onClick={saveFile} disabled={saving}>
+                        {saving ? "Saving..." : "Save Changes"}
+                      </Button>
                     </Flex>
-                  </Flex>
-                  <Flex vertical="center" gap="4" width="100%">
-                    <Text size="sm" weight="strong">Filename (must end in .mdx)</Text>
-                    <input 
-                      style={{ 
-                        width: "100%", 
-                        padding: "12px", 
-                        borderRadius: "8px", 
-                        background: "var(--neutral-alpha-weak)", 
-                        color: "var(--neutral-on-background)",
-                        fontFamily: "monospace",
-                        border: "1px solid var(--neutral-alpha-medium)",
-                        boxSizing: "border-box"
-                      }}
-                      value={editingFile.name} 
-                      onChange={(e) => setEditingFile({ ...editingFile, name: e.target.value })}
-                    />
-                  </Flex>
-                  <Column gap="8" width="100%">
-                    <Flex gap="8">
-                      <Button size="sm" variant="secondary" onClick={() => applyFormat("# ")}>H1</Button>
-                      <Button size="sm" variant="secondary" onClick={() => applyFormat("## ")}>H2</Button>
-                      <Button size="sm" variant="secondary" onClick={() => applyFormat("**", "**")}>Bold</Button>
-                      <Button size="sm" variant="secondary" onClick={() => applyFormat("*", "*")}>Italic</Button>
-                      <Button size="sm" variant="secondary" onClick={() => applyFormat("- ")}>List</Button>
-                      <Button size="sm" variant="secondary" onClick={() => applyFormat(">", "")}>Quote</Button>
+                    <Flex vertical="center" gap="4" width="100%">
+                      <Text size="sm" weight="strong">Filename (must end in .mdx)</Text>
+                      <input 
+                        style={{ 
+                          width: "100%", 
+                          padding: "12px", 
+                          borderRadius: "8px", 
+                          background: "var(--neutral-alpha-weak)", 
+                          color: "var(--neutral-on-background)",
+                          fontFamily: "monospace",
+                          border: "1px solid var(--neutral-alpha-medium)",
+                          boxSizing: "border-box"
+                        }}
+                        value={editingFile.name} 
+                        onChange={(e) => setEditingFile({ ...editingFile, name: e.target.value })}
+                      />
                     </Flex>
-                    <textarea 
-                      ref={textareaRef}
-                      style={{ 
-                        width: "100%", 
-                        minHeight: "400px", 
-                        padding: "12px", 
-                        borderRadius: "8px", 
-                        background: "var(--neutral-alpha-weak)", 
-                        color: "var(--neutral-on-background)",
-                        fontFamily: "monospace",
-                        border: "1px solid var(--neutral-alpha-medium)",
-                        boxSizing: "border-box"
-                      }}
-                      value={editingFile.content}
-                      onChange={(e) => setEditingFile({ ...editingFile, content: e.target.value })}
-                    />
+                    <Column gap="12" width="100%">
+                      <Flex gap="8" padding="8" background="neutral-alpha-weak" radius="m" align="center">
+                        <Button size="sm" variant="secondary" onClick={() => applyFormat("# ")}>H1</Button>
+                        <Button size="sm" variant="secondary" onClick={() => applyFormat("## ")}>H2</Button>
+                        <Button size="sm" variant="secondary" onClick={() => applyFormat("**", "**")}>Bold</Button>
+                        <Button size="sm" variant="secondary" onClick={() => applyFormat("*", "*")}>Italic</Button>
+                        <Button size="sm" variant="secondary" onClick={() => applyFormat("- ")}>List</Button>
+                        <Button size="sm" variant="secondary" onClick={() => applyFormat(">", "")}>Quote</Button>
+                      </Flex>
+                      <textarea 
+                        ref={textareaRef}
+                        style={{ 
+                          width: "100%", 
+                          minHeight: "500px", 
+                          padding: "16px", 
+                          borderRadius: "8px", 
+                          background: "var(--neutral-alpha-weak)", 
+                          color: "var(--neutral-on-background)",
+                          fontFamily: "monospace",
+                          border: "1px solid var(--neutral-alpha-medium)",
+                          boxSizing: "border-box",
+                          fontSize: "14px",
+                          lineHeight: "1.6"
+                        }}
+                        value={editingFile.content}
+                        onChange={(e) => setEditingFile({ ...editingFile, content: e.target.value })}
+                      />
+                    </Column>
                   </Column>
-                </Column>
+                </Card>
               ) : (
                 <>
-                  <Flex justify="end" gap="12">
+                  <Flex justify="end" gap="12" width="100%">
                     <Button variant="secondary" onClick={() => createNewFile("blog")}>+ New Post</Button>
                     <Button variant="secondary" onClick={() => createNewFile("work")}>+ New Project</Button>
                   </Flex>
@@ -501,81 +583,85 @@ export default function AdminPage() {
           )}
 
           {activeTab === "gallery" && (
-            <Column gap="16">
-              <Flex justify="space-between" align="center">
-                <Text weight="strong" size="lg">Gallery Images</Text>
-                <Flex gap="12" align="center">
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    style={{ display: "none" }} 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    {uploading ? "Uploading..." : "+ Upload Image"}
-                  </Button>
-                </Flex>
-              </Flex>
-              
-              <Flex gap="12" align="center" padding="8" background="neutral-alpha-weak" radius="m-4" width="100%">
-                <Text size="sm" weight="strong" width="100px">Image</Text>
-                <Text size="sm" weight="strong" width="30%">Alt Text</Text>
-                <Text size="sm" weight="strong" width="20%">Orientation</Text>
-                <Text size="sm" weight="strong" width="100px" textAlign="center">Action</Text>
-              </Flex>
-
-              <Column gap="12">
-                {content.gallery?.images.map((img: any, index: number) => (
-                  <Flex key={index} gap="12" align="center" padding="12" background="neutral-alpha-weak" radius="m-4" width="100%">
-                    <Flex width="100px" align="center" justify="center" overflow="hidden" radius="s" background="neutral-alpha-medium" height="40px">
-                      <img src={img.src} alt={img.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </Flex>
-                    <Input 
-                      id={`gallery-alt-${index}`}
-                      placeholder="Alt Text"
-                      value={img.alt} 
-                      onChange={(e) => {
-                        const updatedImages = [...content.gallery.images];
-                        updatedImages[index].alt = e.target.value;
-                        setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
-                      }}
-                      width="30%"
-                    />
-                    <Input 
-                      id={`gallery-orientation-${index}`}
-                      placeholder="Orientation"
-                      value={img.orientation} 
-                      onChange={(e) => {
-                        const updatedImages = [...content.gallery.images];
-                        updatedImages[index].orientation = e.target.value;
-                        setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
-                      }}
-                      width="20%"
+            <Card width="100%" style={{ padding: "24px" }}>
+              <Column gap="20">
+                <Flex justify="space-between" align="center" width="100%">
+                  <Text weight="strong" size="lg">Gallery Images</Text>
+                  <Flex gap="12" align="center">
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      style={{ display: "none" }} 
+                      accept="image/*"
+                      onChange={handleFileChange}
                     />
                     <Button 
                       variant="secondary" 
-                      onClick={() => {
-                        const updatedImages = content.gallery.images.filter((_: any, i: number) => i !== index);
-                        setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
-                      }}
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
                     >
-                      Delete
+                      {uploading ? "Uploading..." : "+ Upload Image"}
                     </Button>
                   </Flex>
-                ))}
-                {(!content.gallery?.images || content.gallery.images.length === 0) && (
-                  <Text size="sm" onBackground="neutral-medium">No images in gallery.</Text>
-                )}
+                </Flex>
+                
+                <Flex gap="12" align="center" padding="12" background="neutral-alpha-weak" radius="m" width="100%">
+                  <Text size="sm" weight="strong" width="100px">Image</Text>
+                  <Text size="sm" weight="strong" width="30%">Alt Text</Text>
+                  <Text size="sm" weight="strong" width="20%">Orientation</Text>
+                  <Text size="sm" weight="strong" width="100px" textAlign="center">Action</Text>
+                </Flex>
+
+                <Column gap="12" width="100%">
+                  {content.gallery?.images.map((img: any, index: number) => (
+                    <Flex key={index} gap="12" align="center" padding="12" background="neutral-alpha-weak" radius="m" width="100%">
+                      <Flex width="100px" align="center" justify="center" overflow="hidden" radius="s" background="neutral-alpha-medium" height="40px">
+                        <img src={img.src} alt={img.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </Flex>
+                      <Input 
+                        id={`gallery-alt-${index}`}
+                        placeholder="Alt Text"
+                        value={img.alt} 
+                        onChange={(e) => {
+                          const updatedImages = [...content.gallery.images];
+                          updatedImages[index].alt = e.target.value;
+                          setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
+                        }}
+                        width="30%"
+                      />
+                      <Input 
+                        id={`gallery-orientation-${index}`}
+                        placeholder="Orientation"
+                        value={img.orientation} 
+                        onChange={(e) => {
+                          const updatedImages = [...content.gallery.images];
+                          updatedImages[index].orientation = e.target.value;
+                          setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
+                        }}
+                        width="20%"
+                      />
+                      <Button 
+                        variant="secondary" 
+                        onClick={() => {
+                          const updatedImages = content.gallery.images.filter((_: any, i: number) => i !== index);
+                          setContent({ ...content, gallery: { ...content.gallery, images: updatedImages } });
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Flex>
+                  ))}
+                  {(!content.gallery?.images || content.gallery.images.length === 0) && (
+                    <Flex padding="32" justify="center" width="100%">
+                      <Text size="sm" onBackground="neutral-medium">No images in gallery.</Text>
+                    </Flex>
+                  )}
+                </Column>
               </Column>
-            </Column>
+            </Card>
           )}
         </Column>
-      </Card>
-    </Column>
+      </Column>
+    </Flex>
   );
 }
