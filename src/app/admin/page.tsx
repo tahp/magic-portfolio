@@ -28,6 +28,7 @@ export default function AdminPage() {
   // Upload state
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     async function loadAll() {
@@ -193,6 +194,28 @@ export default function AdminPage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const applyFormat = (prefix: string, suffix: string = "") => {
+    if (!textareaRef.current || !editingFile) return;
+    
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = editingFile.content;
+    
+    const before = text.substring(0, start);
+    const selected = text.substring(start, end);
+    const after = text.substring(end);
+    
+    const newContent = before + prefix + selected + suffix + after;
+    setEditingFile({ ...editingFile, content: newContent });
+    
+    // Delay to let React update the DOM before restoring focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length + suffix.length);
+    }, 0);
   };
 
   if (loading) return (
@@ -363,21 +386,32 @@ export default function AdminPage() {
                     onChange={(e) => setEditingFile({ ...editingFile, name: e.target.value })}
                   />
                 </Flex>
-                <textarea 
-                  style={{ 
-                    width: "100%", 
-                    minHeight: "400px", 
-                    padding: "12px", 
-                    borderRadius: "8px", 
-                    background: "var(--neutral-alpha-weak)", 
-                    color: "var(--neutral-on-background)",
-                    fontFamily: "monospace",
-                    border: "1px solid var(--neutral-alpha-medium)",
-                    boxSizing: "border-box"
-                  }}
-                  value={editingFile.content}
-                  onChange={(e) => setEditingFile({ ...editingFile, content: e.target.value })}
-                />
+                <Column gap="8" width="100%">
+                  <Flex gap="8">
+                    <Button size="sm" variant="secondary" onClick={() => applyFormat("# ")}>H1</Button>
+                    <Button size="sm" variant="secondary" onClick={() => applyFormat("## ")}>H2</Button>
+                    <Button size="sm" variant="secondary" onClick={() => applyFormat("**", "**")}>Bold</Button>
+                    <Button size="sm" variant="secondary" onClick={() => applyFormat("*", "*")}>Italic</Button>
+                    <Button size="sm" variant="secondary" onClick={() => applyFormat("- ")}>List</Button>
+                    <Button size="sm" variant="secondary" onClick={() => applyFormat(">", "")}>Quote</Button>
+                  </Flex>
+                  <textarea 
+                    ref={textareaRef}
+                    style={{ 
+                      width: "100%", 
+                      minHeight: "400px", 
+                      padding: "12px", 
+                      borderRadius: "8px", 
+                      background: "var(--neutral-alpha-weak)", 
+                      color: "var(--neutral-on-background)",
+                      fontFamily: "monospace",
+                      border: "1px solid var(--neutral-alpha-medium)",
+                      boxSizing: "border-box"
+                    }}
+                    value={editingFile.content}
+                    onChange={(e) => setEditingFile({ ...editingFile, content: e.target.value })}
+                  />
+                </Column>
               </Column>
             </Card>
           ) : (
