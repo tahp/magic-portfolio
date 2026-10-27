@@ -65,7 +65,6 @@ export default async function Blog({ params }: { params: Promise<{ slug: string 
       src: person.avatar,
     })) || [];
 
-  // Fetch actual content from the API
   const contentRes = await fetch(\`\${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click"}/api/content/files/blog/\${post.name}\`, {
     next: { revalidate: 60 }
   });
