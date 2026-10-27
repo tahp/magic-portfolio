@@ -41,8 +41,8 @@ export async function generateMetadata({
     title: post.metadata.title,
     description: post.metadata.summary,
     baseURL: baseURL,
-    image: post.metadata.image || \`/api/og/generate?title=\${post.metadata.title}\`,
-    path: \`\${work.path}/\${post.slug}\`,
+    image: post.metadata.image || "/api/og/generate?title=" + post.metadata.title,
+    path: work.path + "/" + post.slug,
   });
 }
 
@@ -68,7 +68,7 @@ export default async function Project({
       "aria-label": member.name,
     })) || [];
 
-  const contentRes = await fetch(\`\${process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click"}/api/content/files/work/\${post.name}\`, {
+  const contentRes = await fetch((process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click") + "/api/content/files/work/" + post.name, {
     next: { revalidate: 60 }
   });
   const { content } = await contentRes.json();
@@ -78,18 +78,18 @@ export default async function Project({
       <Schema
         as="blogPosting"
         baseURL={baseURL}
-        path={\`\${work.path}/\${post.slug}\`}
+        path={work.path + "/" + post.slug}
         title={post.metadata.title}
         description={post.metadata.summary}
         datePublished={post.metadata.publishedAt}
         dateModified={post.metadata.publishedAt}
         image={
-          post.metadata.image || \`/api/og/generate?title=\${encodeURIComponent(post.metadata.title)}\`
+          post.metadata.image || "/api/og/generate?title=" + encodeURIComponent(post.metadata.title)
         }
         author={{
           name: person.name,
-          url: \`\${baseURL}\${about.path}\`,
-          image: \`\${baseURL}\${person.avatar}\`,
+          url: baseURL + about.path,
+          image: baseURL + person.avatar,
         }}
       />
       <Column maxWidth="s" gap="16" horizontal="center" align="center">
