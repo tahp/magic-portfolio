@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import "katex/dist/katex.min.css";
-import { getPostsCloud } from "@/utils/utils";
+import { getUnifiedPosts, getContentCloud } from "@/utils/utils";
 import {
   Meta,
   Schema,
@@ -32,7 +32,7 @@ export async function generateMetadata({
     ? routeParams.slug.join("/")
     : routeParams.slug || "";
 
-  const posts = await getPostsCloud("work");
+  const posts = await getUnifiedPosts("work");
   let post = posts.find((post: any) => post.slug === slugPath);
 
   if (!post) return {};
@@ -55,11 +55,18 @@ export default async function Project({
     ? routeParams.slug.join("/")
     : routeParams.slug || "";
 
-  const posts = await getPostsCloud("work");
+  const posts = await getUnifiedPosts("work");
   let post = posts.find((post: any) => post.slug === slugPath);
 
   if (!post) {
     notFound();
+  }
+
+  let content = "";
+  if (post.source === "cloud") {
+    content = await getContentCloud("work", post.name) || "";
+  } else {
+    content = post.content || "";
   }
 
   const avatars =
@@ -67,11 +74,6 @@ export default async function Project({
       src: member.avatar,
       "aria-label": member.name,
     })) || [];
-
-  const contentRes = await fetch((process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click") + "/api/content/files/work/" + post.name, {
-    next: { revalidate: 60 }
-  });
-  const { content } = await contentRes.json();
 
   return (
     <Column as="section" maxWidth="m" horizontal="center" gap="l">

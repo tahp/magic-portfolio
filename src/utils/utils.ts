@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { list } from "@vercel/blob";
 
 type Team = {
   name: string;
@@ -20,8 +21,6 @@ type Metadata = {
   team: Team[];
   link?: string;
 };
-
-import { notFound } from "next/navigation";
 
 function getMDXFiles(dir: string) {
   if (!fs.existsSync(dir)) {
@@ -73,10 +72,57 @@ export function getPosts(customPath = ["", "", "", ""]) {
   return getMDXData(postsDir);
 }
 
+async function getMetadataFromBlob(url: string) {
+  const res = await fetch(url);
+  const text = await res.text();
+  const { data } = matter(text);
+  return data;
+}
+
 export async function getPostsCloud(type: "blog" | "work") {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click";
-  const res = await fetch(`${baseUrl}/api/content/files`);
-  if (!res.ok) return [];
-  const data = await res.json();
-  return type === "blog" ? data.posts : data.projects;
+  try {
+    const blobs = await list({ prefix: `${type}/` });
+    const filteredBlobs = blobs.blobs.filter(b => b.pathname.endsWith(".mdx"));
+    
+    return await Promise.all(
+      filteredBlobs.map(async (b) => {
+        const metadata = await getMetadataFromBlob(b.url);
+        const slug = b.pathname.replace(`${type}/`, "").replace(".mdx", "");
+        return { 
+          name: b.pathname.replace(`${type}/`, ""), 
+          slug, 
+          metadata,
+          source: "cloud",
+          content: "", // Content fetched on demand
+          hasContent: true // Cloud posts created via admin always have content
+        };
+      })
+    );
+  } catch (error) {
+    console.error(`Error fetching ${type} posts from cloud:`, error);
+    return [];
+  }
+}
+
+export async function getContentCloud(type: "blog" | "work", filename: string) {
+  try {
+    const blobs = await list({ prefix: `${type}/${filename}` });
+    const blob = blobs.blobs.find(b => b.pathname === `${type}/${filename}`);
+
+    if (!blob) return null;
+
+    const response = await fetch(blob.url);
+    return await response.text();
+  } catch (error) {
+    console.error(`Error fetching cloud content for ${filename}:`, error);
+    return null;
+  }
+}
+
+export async function getUnifiedPosts(type: "blog" | "work") {
+  const dir = type === "blog" ? ["src", "app", "blog", "posts"] : ["src", "app", "work", "projects"];
+  const localPosts = getPosts(dir).map(p => ({ ...p, source: "local", hasContent: !!p.content }));
+  const cloudPosts = await getPostsCloud(type);
+  
+  return [...localPosts, ...cloudPosts];
 }

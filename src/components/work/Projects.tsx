@@ -1,4 +1,4 @@
-import { getPosts } from "@/utils/utils";
+import { getUnifiedPosts } from "@/utils/utils";
 import { Column } from "@once-ui-system/core";
 import { ProjectCard } from "@/components";
 
@@ -7,8 +7,8 @@ interface ProjectsProps {
   exclude?: string[];
 }
 
-export function Projects({ range, exclude }: ProjectsProps) {
-  let allProjects = getPosts(["src", "app", "work", "projects"]);
+export async function Projects({ range, exclude }: ProjectsProps) {
+  let allProjects = await getUnifiedPosts("work");
 
   // Exclude by slug (exact match)
   if (exclude && exclude.length > 0) {
@@ -33,7 +33,7 @@ export function Projects({ range, exclude }: ProjectsProps) {
           images={post.metadata.images}
           title={post.metadata.title}
           description={post.metadata.summary}
-          hasContent={post.content.trim() !== ""}
+          hasContent={post.hasContent}
           avatars={
             post.metadata.team?.map((member) => ({
               src: member.avatar,

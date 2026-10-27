@@ -1,4 +1,4 @@
-import { getPosts } from "@/utils/utils";
+import { getUnifiedPosts } from "@/utils/utils";
 import { Grid } from "@once-ui-system/core";
 import Post from "./Post";
 
@@ -10,14 +10,14 @@ interface PostsProps {
   exclude?: string[];
 }
 
-export function Posts({
+export async function Posts({
   range,
   columns = "1",
   thumbnail = false,
   exclude = [],
   direction,
 }: PostsProps) {
-  let allBlogs = getPosts(["src", "app", "blog", "posts"]);
+  let allBlogs = await getUnifiedPosts("blog");
 
   // Exclude by slug (exact match)
   if (exclude.length) {

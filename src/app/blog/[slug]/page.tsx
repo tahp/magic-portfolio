@@ -17,7 +17,7 @@ import {
 } from "@once-ui-system/core";
 import { baseURL, about, blog, person } from "@/resources";
 import { formatDate } from "@/utils/formatDate";
-import { getPostsCloud } from "@/utils/utils";
+import { getUnifiedPosts, getContentCloud } from "@/utils/utils";
 import { Metadata } from "next";
 import React from "react";
 import { Posts } from "@/components/blog/Posts";
@@ -33,7 +33,7 @@ export async function generateMetadata({
     ? routeParams.slug.join("/")
     : routeParams.slug || "";
 
-  const posts = await getPostsCloud("blog");
+  const posts = await getUnifiedPosts("blog");
   let post = posts.find((post: any) => post.slug === slugPath);
 
   if (!post) return {};
@@ -53,22 +53,26 @@ export default async function Blog({ params }: { params: Promise<{ slug: string 
     ? routeParams.slug.join("/")
     : routeParams.slug || "";
 
-  const posts = await getPostsCloud("blog");
+  const posts = await getUnifiedPosts("blog");
   let post = posts.find((post: any) => post.slug === slugPath);
 
   if (!post) {
     notFound();
   }
 
+  let content = "";
+  if (post.source === "cloud") {
+    content = await getContentCloud("blog", post.name) || "";
+  } else {
+    // Local posts already have content if getUnifiedPosts was implemented to include it, 
+    // but getUnifiedPosts for local posts uses getPosts which returns content.
+    content = post.content || "";
+  }
+
   const avatars =
     post.metadata.team?.map((person: any) => ({
       src: person.avatar,
     })) || [];
-
-  const contentRes = await fetch((process.env.NEXT_PUBLIC_BASE_URL || "https://portfolio.rthefeshow.click") + "/api/content/files/blog/" + post.name, {
-    next: { revalidate: 60 }
-  });
-  const { content } = await contentRes.json();
 
   return (
     <Row fillWidth>
