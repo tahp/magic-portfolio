@@ -324,7 +324,18 @@ export default function AdminPage() {
   );
 
   return (
-    <Flex width="100%" height="100vh" position="relative">
+    <Flex 
+      width="100%" 
+      height="100vh" 
+      position="relative"
+      style={{ 
+        backgroundImage: "url('/images/admin-bg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
       {notification && (
         <Notification 
           message={notification.message} 
